@@ -1,0 +1,26 @@
+# Configuration mounted by docker-compose.yml. Auth is disabled here so the
+# stack can be exercised without an identity provider; point auth.issuer at
+# your Keycloak realm and set enabled: true for anything real.
+server:
+  address: ":8080"
+
+auth:
+  enabled: false
+  default-sub: test-user
+
+bootstrap:
+  admin-sub: ${SFORZA_ADMIN_SUB}
+  files:
+    - /etc/sforza/bootstrap/*.yaml
+
+storage:
+  shared:
+    driver: postgres
+    dsn: ${SHARED_DSN}
+  tenants:
+    tenant-a:
+      driver: postgres
+      dsn: ${TENANT_A_DSN}
+    tenant-b:
+      driver: postgres
+      dsn: ${TENANT_B_DSN}

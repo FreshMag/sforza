@@ -1,0 +1,35 @@
+# Example bootstrap file contributed by a microservice ("shop" service).
+# Synchronization is additive and idempotent: declared entities are created
+# or updated, everything else is left untouched.
+resources:
+  - product
+  - invoice
+
+operations:
+  - product:read
+  - product:write
+  - invoice:read
+  - invoice:approve
+
+tenants:
+  tenant-a:
+    roles:
+      manager:
+        product:read: FULL
+        invoice:read: FULL
+        product:write:
+          scope: RESTRICTED
+          ids: [10, 15, 42]
+      viewer:
+        product:read: FULL
+        invoice:read: EMPTY
+    users:
+      john:
+        roles:
+          - manager
+        permissions:
+          invoice:approve: FULL
+  tenant-b:
+    roles:
+      viewer:
+        product:read: FULL

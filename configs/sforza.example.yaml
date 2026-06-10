@@ -1,0 +1,27 @@
+# Sforza configuration. Environment variables are expanded with ${VAR}.
+server:
+  address: ":8080"
+
+auth:
+  enabled: true
+  issuer: ${OIDC_ISSUER}        # e.g. https://keycloak.example.com/realms/myrealm
+  audience: ${OIDC_AUDIENCE}    # optional; empty skips the audience check
+  # default-sub is only used when enabled: false
+  # default-sub: test-user
+
+bootstrap:
+  admin-sub: ${SFORZA_ADMIN_SUB}
+  files:
+    - /etc/sforza/bootstrap/*.yaml
+
+storage:
+  shared:
+    driver: postgres
+    dsn: ${SHARED_DSN}          # e.g. host=db user=sforza dbname=sforza_shared ...
+  tenants:
+    tenant-a:
+      driver: postgres
+      dsn: ${TENANT_A_DSN}
+    tenant-b:
+      driver: postgres
+      dsn: ${TENANT_B_DSN}

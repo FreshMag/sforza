@@ -1,0 +1,35 @@
+# Local stack: Postgres (shared + per-tenant databases) and Sforza.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sforza
+      POSTGRES_PASSWORD: sforza
+    volumes:
+      - ./deploy/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sforza"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  sforza:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SFORZA_CONFIG: /etc/sforza/sforza.yaml
+      SHARED_DSN: host=db user=sforza password=sforza dbname=sforza_shared sslmode=disable
+      TENANT_A_DSN: host=db user=sforza password=sforza dbname=sforza_tenant_a sslmode=disable
+      TENANT_B_DSN: host=db user=sforza password=sforza dbname=sforza_tenant_b sslmode=disable
+      SFORZA_ADMIN_SUB: admin-user-sub
+    volumes:
+      - ./deploy/sforza.compose.yaml:/etc/sforza/sforza.yaml:ro
+      - ./bootstrap:/etc/sforza/bootstrap:ro
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
