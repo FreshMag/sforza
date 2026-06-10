@@ -124,8 +124,7 @@ func Sync(stores *store.Stores, files []BootstrapFile) error {
 
 func syncFile(stores *store.Stores, f BootstrapFile) error {
 	for _, name := range f.Resources {
-		if err := stores.Shared.Where(&store.Resource{Name: name}).
-			FirstOrCreate(&store.Resource{Name: name}).Error; err != nil {
+		if err := stores.Shared.EnsureResource(name); err != nil {
 			return fmt.Errorf("sync resource %q: %w", name, err)
 		}
 	}
@@ -140,7 +139,7 @@ func syncFile(stores *store.Stores, f BootstrapFile) error {
 			return fmt.Errorf("%w: bootstrap references tenant %q which is not configured", ErrValidation, tenantID)
 		}
 		for roleName, perms := range tb.Roles {
-			if _, err := EnsureRole(tenant, roleName); err != nil {
+			if err := EnsureRole(tenant, roleName); err != nil {
 				return fmt.Errorf("tenant %q: sync role %q: %w", tenantID, roleName, err)
 			}
 			for op, spec := range perms {
@@ -212,7 +211,7 @@ func BootstrapMeta(stores *store.Stores, adminSub string) error {
 	}
 	for _, tenantID := range stores.TenantIDs() {
 		tenant, _ := stores.Tenant(tenantID)
-		if _, err := EnsureRole(tenant, model.AdminRole); err != nil {
+		if err := EnsureRole(tenant, model.AdminRole); err != nil {
 			return fmt.Errorf("tenant %q: bootstrap admin role: %w", tenantID, err)
 		}
 		for _, op := range metaOps {

@@ -13,7 +13,7 @@ import (
 // --- Self-service permission queries ---
 
 func (s *Server) handleMyOperations(w http.ResponseWriter, r *http.Request) {
-	ops, err := service.EffectiveOperations(tenantDB(r), subject(r))
+	ops, err := service.EffectiveOperations(tenantStore(r), subject(r))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -22,7 +22,7 @@ func (s *Server) handleMyOperations(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleMyMetaOperations(w http.ResponseWriter, r *http.Request) {
-	ops, err := service.MetaOperations(tenantDB(r), subject(r))
+	ops, err := service.MetaOperations(tenantStore(r), subject(r))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -36,7 +36,7 @@ func (s *Server) handleMyRecordIDs(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "missing operations query parameter (comma-separated)")
 		return
 	}
-	ids, err := service.RecordIDs(tenantDB(r), subject(r), strings.Split(raw, ","))
+	ids, err := service.RecordIDs(tenantStore(r), subject(r), strings.Split(raw, ","))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -124,7 +124,7 @@ func (s *Server) handleListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleUserOperations(w http.ResponseWriter, r *http.Request) {
-	ops, err := service.EffectiveOperations(tenantDB(r), chi.URLParam(r, "sub"))
+	ops, err := service.EffectiveOperations(tenantStore(r), chi.URLParam(r, "sub"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -133,7 +133,7 @@ func (s *Server) handleUserOperations(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleUserMetaOperations(w http.ResponseWriter, r *http.Request) {
-	ops, err := service.MetaOperations(tenantDB(r), chi.URLParam(r, "sub"))
+	ops, err := service.MetaOperations(tenantStore(r), chi.URLParam(r, "sub"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -142,7 +142,7 @@ func (s *Server) handleUserMetaOperations(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Server) handleUserRoles(w http.ResponseWriter, r *http.Request) {
-	roles, err := service.UserRoles(tenantDB(r), chi.URLParam(r, "sub"))
+	roles, err := service.UserRoles(tenantStore(r), chi.URLParam(r, "sub"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -153,7 +153,7 @@ func (s *Server) handleUserRoles(w http.ResponseWriter, r *http.Request) {
 // --- Roles ---
 
 func (s *Server) handleListRoles(w http.ResponseWriter, r *http.Request) {
-	roles, err := service.ListRoles(tenantDB(r))
+	roles, err := service.ListRoles(tenantStore(r))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -163,16 +163,10 @@ func (s *Server) handleListRoles(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleGetRole(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
-	perms, err := service.RolePermissions(tenantDB(r), name)
+	permissions, err := service.RolePermissions(tenantStore(r), name)
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
-	}
-	permissions := make([]model.OperationScope, 0, len(perms))
-	for _, p := range perms {
-		permissions = append(permissions, model.OperationScope{
-			Operation: p.Operation, Scope: model.Scope(p.Scope),
-		})
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"name": name, "permissions": permissions})
 }
@@ -185,7 +179,7 @@ func (s *Server) handleCreateRole(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
-	if err := service.CreateRole(tenantDB(r), req.Name); err != nil {
+	if err := service.CreateRole(tenantStore(r), req.Name); err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
 	}
@@ -200,7 +194,7 @@ func (s *Server) handleRenameRole(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
-	if err := service.RenameRole(tenantDB(r), chi.URLParam(r, "name"), req.Name); err != nil {
+	if err := service.RenameRole(tenantStore(r), chi.URLParam(r, "name"), req.Name); err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
 	}
@@ -208,7 +202,7 @@ func (s *Server) handleRenameRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDeleteRole(w http.ResponseWriter, r *http.Request) {
-	if err := service.DeleteRole(tenantDB(r), chi.URLParam(r, "name")); err != nil {
+	if err := service.DeleteRole(tenantStore(r), chi.URLParam(r, "name")); err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
 	}
@@ -216,7 +210,7 @@ func (s *Server) handleDeleteRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAssignRole(w http.ResponseWriter, r *http.Request) {
-	err := service.AssignRole(s.stores.Shared, tenantDB(r), chi.URLParam(r, "sub"), chi.URLParam(r, "name"))
+	err := service.AssignRole(s.stores.Shared, tenantStore(r), chi.URLParam(r, "sub"), chi.URLParam(r, "name"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -225,7 +219,7 @@ func (s *Server) handleAssignRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleUnassignRole(w http.ResponseWriter, r *http.Request) {
-	err := service.UnassignRole(tenantDB(r), chi.URLParam(r, "sub"), chi.URLParam(r, "name"))
+	err := service.UnassignRole(tenantStore(r), chi.URLParam(r, "sub"), chi.URLParam(r, "name"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -243,7 +237,7 @@ func (s *Server) handleSetRolePermission(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
-	err := service.SetRolePermission(s.stores.Shared, tenantDB(r),
+	err := service.SetRolePermission(s.stores.Shared, tenantStore(r),
 		chi.URLParam(r, "name"), chi.URLParam(r, "operation"), req.Scope)
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
@@ -253,7 +247,7 @@ func (s *Server) handleSetRolePermission(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Server) handleRemoveRolePermission(w http.ResponseWriter, r *http.Request) {
-	err := service.RemoveRolePermission(tenantDB(r), chi.URLParam(r, "name"), chi.URLParam(r, "operation"))
+	err := service.RemoveRolePermission(tenantStore(r), chi.URLParam(r, "name"), chi.URLParam(r, "operation"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -269,7 +263,7 @@ func (s *Server) handleSetUserPermission(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
-	err := service.SetUserPermission(s.stores.Shared, tenantDB(r),
+	err := service.SetUserPermission(s.stores.Shared, tenantStore(r),
 		chi.URLParam(r, "sub"), chi.URLParam(r, "operation"), req.Scope)
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
@@ -279,7 +273,7 @@ func (s *Server) handleSetUserPermission(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Server) handleRemoveUserPermission(w http.ResponseWriter, r *http.Request) {
-	err := service.RemoveUserPermission(tenantDB(r), chi.URLParam(r, "sub"), chi.URLParam(r, "operation"))
+	err := service.RemoveUserPermission(tenantStore(r), chi.URLParam(r, "sub"), chi.URLParam(r, "operation"))
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
 		return
@@ -300,7 +294,7 @@ func (s *Server) handleRoleRestrictedIDs(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
-	err := service.UpdateRoleRestrictedIDs(tenantDB(r),
+	err := service.UpdateRoleRestrictedIDs(tenantStore(r),
 		chi.URLParam(r, "name"), chi.URLParam(r, "operation"), req.Add, req.Remove)
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())
@@ -315,7 +309,7 @@ func (s *Server) handleUserRestrictedIDs(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "invalid body: "+err.Error())
 		return
 	}
-	err := service.UpdateUserRestrictedIDs(tenantDB(r),
+	err := service.UpdateUserRestrictedIDs(tenantStore(r),
 		chi.URLParam(r, "sub"), chi.URLParam(r, "operation"), req.Add, req.Remove)
 	if err != nil {
 		writeError(w, httpStatus(err), err.Error())

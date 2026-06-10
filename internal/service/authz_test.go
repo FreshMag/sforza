@@ -4,15 +4,13 @@ import (
 	"reflect"
 	"testing"
 
-	"gorm.io/gorm"
-
 	"github.com/FreshMag/sforza/internal/model"
 	"github.com/FreshMag/sforza/internal/service"
 	"github.com/FreshMag/sforza/internal/store"
 	"github.com/FreshMag/sforza/internal/testutil"
 )
 
-func setup(t *testing.T) (*store.Stores, *gorm.DB) {
+func setup(t *testing.T) (*store.Stores, store.Tenant) {
 	t.Helper()
 	stores := testutil.NewStores(t)
 	tenant, _ := stores.Tenant("tenant-a")

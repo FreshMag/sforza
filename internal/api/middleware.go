@@ -5,10 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"gorm.io/gorm"
-
 	"github.com/FreshMag/sforza/internal/auth"
 	"github.com/FreshMag/sforza/internal/service"
+	"github.com/FreshMag/sforza/internal/store"
 )
 
 // HeaderTenantID selects the active tenant for the request.
@@ -19,7 +18,7 @@ type ctxKey int
 const (
 	ctxSub ctxKey = iota
 	ctxTenantID
-	ctxTenantDB
+	ctxTenantStore
 )
 
 func subject(r *http.Request) string {
@@ -27,9 +26,9 @@ func subject(r *http.Request) string {
 	return sub
 }
 
-func tenantDB(r *http.Request) *gorm.DB {
-	db, _ := r.Context().Value(ctxTenantDB).(*gorm.DB)
-	return db
+func tenantStore(r *http.Request) store.Tenant {
+	t, _ := r.Context().Value(ctxTenantStore).(store.Tenant)
+	return t
 }
 
 // withAuth authenticates the request and lazily provisions the user in the
@@ -57,13 +56,13 @@ func (s *Server) withTenant(next http.Handler) http.Handler {
 			writeError(w, http.StatusBadRequest, "missing "+HeaderTenantID+" header")
 			return
 		}
-		db, ok := s.stores.Tenant(id)
+		tenant, ok := s.stores.Tenant(id)
 		if !ok {
 			writeError(w, http.StatusNotFound, "unknown tenant "+id)
 			return
 		}
 		ctx := context.WithValue(r.Context(), ctxTenantID, id)
-		ctx = context.WithValue(ctx, ctxTenantDB, db)
+		ctx = context.WithValue(ctx, ctxTenantStore, tenant)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -74,7 +73,7 @@ func (s *Server) requireMeta(operations ...string) func(http.Handler) http.Handl
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			for _, op := range operations {
-				ok, err := service.Authorize(tenantDB(r), subject(r), op)
+				ok, err := service.Authorize(tenantStore(r), subject(r), op)
 				if err != nil {
 					writeError(w, http.StatusInternalServerError, err.Error())
 					return

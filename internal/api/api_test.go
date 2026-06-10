@@ -29,8 +29,12 @@ type testEnv struct {
 }
 
 func newEnv(t *testing.T) *testEnv {
+	return newEnvDriver(t, "sqlite")
+}
+
+func newEnvDriver(t *testing.T, driver string) *testEnv {
 	t.Helper()
-	stores := testutil.NewStores(t)
+	stores := testutil.NewStoresDriver(t, driver)
 	if err := service.BootstrapMeta(stores, testutil.AdminSub); err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +136,15 @@ func TestUnauthenticatedRejected(t *testing.T) {
 }
 
 func TestAdminEndToEnd(t *testing.T) {
-	e := newEnv(t)
+	// The full admin flow must behave identically on every embedded backend.
+	for _, driver := range testutil.Drivers {
+		t.Run(driver, func(t *testing.T) {
+			testAdminEndToEnd(t, newEnvDriver(t, driver))
+		})
+	}
+}
+
+func testAdminEndToEnd(t *testing.T, e *testEnv) {
 
 	// Register a resource and operations.
 	e.check(e.admin("POST", "/api/v1/resources", map[string]string{"name": "product"}, nil),

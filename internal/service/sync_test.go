@@ -8,7 +8,6 @@ import (
 
 	"github.com/FreshMag/sforza/internal/model"
 	"github.com/FreshMag/sforza/internal/service"
-	"github.com/FreshMag/sforza/internal/store"
 	"github.com/FreshMag/sforza/internal/testutil"
 )
 
@@ -130,8 +129,16 @@ func TestSyncIsIdempotent(t *testing.T) {
 		}
 	}
 
-	var count int64
-	stores.Shared.Model(&store.Operation{}).Where("name = ?", "product:read").Count(&count)
+	operations, err := service.ListOperations(stores.Shared)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := 0
+	for _, op := range operations {
+		if op.Name == "product:read" {
+			count++
+		}
+	}
 	if count != 1 {
 		t.Errorf("operation duplicated: count = %d", count)
 	}

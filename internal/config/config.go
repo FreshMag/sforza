@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -87,6 +88,14 @@ func (c *Config) applyDefaults() {
 	}
 }
 
+// Drivers supported by the store layer.
+var validDrivers = map[string]bool{
+	"sqlite":   true,
+	"postgres": true,
+	"mysql":    true,
+	"json":     true,
+}
+
 func (c *Config) validate() error {
 	if c.Auth.IsEnabled() && c.Auth.Issuer == "" {
 		return fmt.Errorf("auth.issuer is required when authentication is enabled")
@@ -94,12 +103,18 @@ func (c *Config) validate() error {
 	if c.Storage.Shared.Driver == "" || c.Storage.Shared.DSN == "" {
 		return fmt.Errorf("storage.shared.driver and storage.shared.dsn are required")
 	}
+	if !validDrivers[strings.ToLower(c.Storage.Shared.Driver)] {
+		return fmt.Errorf("storage.shared: unsupported driver %q (supported: sqlite, postgres, mysql, json)", c.Storage.Shared.Driver)
+	}
 	if len(c.Storage.Tenants) == 0 {
 		return fmt.Errorf("at least one tenant must be declared under storage.tenants")
 	}
 	for id, db := range c.Storage.Tenants {
 		if db.Driver == "" || db.DSN == "" {
 			return fmt.Errorf("tenant %q: driver and dsn are required", id)
+		}
+		if !validDrivers[strings.ToLower(db.Driver)] {
+			return fmt.Errorf("tenant %q: unsupported driver %q (supported: sqlite, postgres, mysql, json)", id, db.Driver)
 		}
 	}
 	if c.Bootstrap.AdminSub == "" {

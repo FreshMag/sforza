@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"sort"
 
-	"gorm.io/gorm"
-
 	"github.com/FreshMag/sforza/internal/model"
 	"github.com/FreshMag/sforza/internal/store"
 )
@@ -13,8 +11,8 @@ import (
 // resolution describes how an operation's effective scope was derived.
 type resolution struct {
 	scope    model.Scope
-	fromUser bool   // true when a user override produced the scope
-	roleIDs  []uint // roles contributing RESTRICTED ids (when !fromUser)
+	fromUser bool     // true when a user override produced the scope
+	roles    []string // roles contributing RESTRICTED ids (when !fromUser)
 }
 
 // resolve computes the effective permission set of a user inside a tenant.
@@ -24,54 +22,49 @@ type resolution struct {
 //   - Across multiple roles the widest scope wins: FULL > RESTRICTED > EMPTY.
 //   - When several roles grant RESTRICTED, their ID sets are unioned.
 //   - Operations with no assignment at all are absent (deny-by-default).
-func resolve(tenant *gorm.DB, sub string) (map[string]*resolution, error) {
+func resolve(tenant store.Tenant, sub string) (map[string]*resolution, error) {
 	eff := map[string]*resolution{}
 
-	var userPerms []store.UserPermission
-	if err := tenant.Where("user_sub = ?", sub).Find(&userPerms).Error; err != nil {
+	userPerms, err := tenant.UserPermissions(sub)
+	if err != nil {
 		return nil, fmt.Errorf("load user permissions: %w", err)
 	}
 	for _, p := range userPerms {
-		eff[p.Operation] = &resolution{scope: model.Scope(p.Scope), fromUser: true}
+		eff[p.Operation] = &resolution{scope: p.Scope, fromUser: true}
 	}
 
-	var assignments []store.UserRole
-	if err := tenant.Where("user_sub = ?", sub).Find(&assignments).Error; err != nil {
+	roles, err := tenant.UserRoles(sub)
+	if err != nil {
 		return nil, fmt.Errorf("load role assignments: %w", err)
 	}
-	if len(assignments) == 0 {
+	if len(roles) == 0 {
 		return eff, nil
 	}
-	roleIDs := make([]uint, 0, len(assignments))
-	for _, a := range assignments {
-		roleIDs = append(roleIDs, a.RoleID)
-	}
 
-	var rolePerms []store.RolePermission
-	if err := tenant.Where("role_id IN ?", roleIDs).Find(&rolePerms).Error; err != nil {
+	grants, err := tenant.RoleGrants(roles)
+	if err != nil {
 		return nil, fmt.Errorf("load role permissions: %w", err)
 	}
-	for _, p := range rolePerms {
-		cur, ok := eff[p.Operation]
+	for _, g := range grants {
+		cur, ok := eff[g.Operation]
 		if ok && cur.fromUser {
 			continue // user override wins
 		}
-		scope := model.Scope(p.Scope)
 		switch {
 		case !ok:
-			r := &resolution{scope: scope}
-			if scope == model.ScopeRestricted {
-				r.roleIDs = []uint{p.RoleID}
+			r := &resolution{scope: g.Scope}
+			if g.Scope == model.ScopeRestricted {
+				r.roles = []string{g.Role}
 			}
-			eff[p.Operation] = r
+			eff[g.Operation] = r
 		case cur.scope == model.ScopeFull:
 			// FULL already; nothing can widen it.
-		case scope == model.ScopeFull:
+		case g.Scope == model.ScopeFull:
 			cur.scope = model.ScopeFull
-			cur.roleIDs = nil
-		case scope == model.ScopeRestricted:
+			cur.roles = nil
+		case g.Scope == model.ScopeRestricted:
 			cur.scope = model.ScopeRestricted
-			cur.roleIDs = append(cur.roleIDs, p.RoleID)
+			cur.roles = append(cur.roles, g.Role)
 		}
 	}
 	return eff, nil
@@ -80,7 +73,7 @@ func resolve(tenant *gorm.DB, sub string) (map[string]*resolution, error) {
 // EffectiveOperations returns every operation available to the user with its
 // effective scope, sorted by operation name. Restricted IDs are never
 // included here.
-func EffectiveOperations(tenant *gorm.DB, sub string) ([]model.OperationScope, error) {
+func EffectiveOperations(tenant store.Tenant, sub string) ([]model.OperationScope, error) {
 	eff, err := resolve(tenant, sub)
 	if err != nil {
 		return nil, err
@@ -95,7 +88,7 @@ func EffectiveOperations(tenant *gorm.DB, sub string) ([]model.OperationScope, e
 
 // MetaOperations returns the subset of effective operations that belong to
 // Sforza's own meta authorization model.
-func MetaOperations(tenant *gorm.DB, sub string) ([]model.OperationScope, error) {
+func MetaOperations(tenant store.Tenant, sub string) ([]model.OperationScope, error) {
 	all, err := EffectiveOperations(tenant, sub)
 	if err != nil {
 		return nil, err
@@ -112,7 +105,7 @@ func MetaOperations(tenant *gorm.DB, sub string) ([]model.OperationScope, error)
 // RecordIDs returns, for each requested operation whose effective scope is
 // RESTRICTED, the sorted set of accessible record IDs. Operations with FULL,
 // EMPTY or no assignment are omitted from the result.
-func RecordIDs(tenant *gorm.DB, sub string, operations []string) (map[string][]string, error) {
+func RecordIDs(tenant store.Tenant, sub string, operations []string) (map[string][]string, error) {
 	eff, err := resolve(tenant, sub)
 	if err != nil {
 		return nil, err
@@ -125,25 +118,12 @@ func RecordIDs(tenant *gorm.DB, sub string, operations []string) (map[string][]s
 		}
 		var ids []string
 		if r.fromUser {
-			var rows []store.UserRestrictedID
-			if err := tenant.Where("user_sub = ? AND operation = ?", sub, op).Find(&rows).Error; err != nil {
-				return nil, fmt.Errorf("load user restricted ids: %w", err)
-			}
-			for _, row := range rows {
-				ids = append(ids, row.RecordID)
-			}
+			ids, err = tenant.UserRestrictedIDs(sub, op)
 		} else {
-			var rows []store.RoleRestrictedID
-			if err := tenant.Where("role_id IN ? AND operation = ?", r.roleIDs, op).Find(&rows).Error; err != nil {
-				return nil, fmt.Errorf("load role restricted ids: %w", err)
-			}
-			seen := map[string]bool{}
-			for _, row := range rows {
-				if !seen[row.RecordID] {
-					seen[row.RecordID] = true
-					ids = append(ids, row.RecordID)
-				}
-			}
+			ids, err = tenant.RoleRestrictedIDs(r.roles, op)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("load restricted ids for %q: %w", op, err)
 		}
 		if ids == nil {
 			ids = []string{}
@@ -157,7 +137,7 @@ func RecordIDs(tenant *gorm.DB, sub string, operations []string) (map[string][]s
 // Authorize reports whether the user holds the operation with FULL scope.
 // Sforza's administrative APIs operate on whole collections, so meta
 // permissions are only honored at FULL scope; RESTRICTED and EMPTY deny.
-func Authorize(tenant *gorm.DB, sub, operation string) (bool, error) {
+func Authorize(tenant store.Tenant, sub, operation string) (bool, error) {
 	eff, err := resolve(tenant, sub)
 	if err != nil {
 		return false, err
