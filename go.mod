@@ -1,4 +1,4 @@
-module github.com/francesco/sforza
+module github.com/FreshMag/sforza
 
 go 1.26.4
 
