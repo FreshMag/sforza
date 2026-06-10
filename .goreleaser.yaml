@@ -1,0 +1,96 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: sforza
+    main: ./cmd/sforza
+    binary: sforza
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: sforza
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE*
+      - configs/sforza.example.yaml
+      - bootstrap/example.yaml
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  # release-please manages the CHANGELOG.md; goreleaser uses GitHub's
+  # auto-generated notes for the release body.
+  use: github-native
+
+dockers:
+  - id: sforza-amd64
+    use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - ghcr.io/freshmag/sforza:{{ .Tag }}-amd64
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.source=https://github.com/FreshMag/sforza
+  - id: sforza-arm64
+    use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - ghcr.io/freshmag/sforza:{{ .Tag }}-arm64
+    build_flag_templates:
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.source=https://github.com/FreshMag/sforza
+
+docker_manifests:
+  - name_template: ghcr.io/freshmag/sforza:{{ .Tag }}
+    image_templates:
+      - ghcr.io/freshmag/sforza:{{ .Tag }}-amd64
+      - ghcr.io/freshmag/sforza:{{ .Tag }}-arm64
+  - name_template: ghcr.io/freshmag/sforza:latest
+    image_templates:
+      - ghcr.io/freshmag/sforza:{{ .Tag }}-amd64
+      - ghcr.io/freshmag/sforza:{{ .Tag }}-arm64
+
+release:
+  github:
+    owner: FreshMag
+    name: sforza
+  # release-please already created the release; goreleaser only uploads
+  # artifacts to it.
+  draft: false
+  prerelease: auto
+  make_latest: true

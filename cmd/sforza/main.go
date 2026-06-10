@@ -19,6 +19,9 @@ import (
 	"github.com/FreshMag/sforza/internal/store"
 )
 
+// version is set at build time: go build -ldflags "-X main.version=v1.2.3"
+var version = "dev"
+
 func main() {
 	configPath := flag.String("config", defaultConfigPath(), "path to the configuration file")
 	flag.Parse()
@@ -47,7 +50,6 @@ func run(configPath string) error {
 		return err
 	}
 
-	// Bootstrap: meta model + administrator, then microservice YAML files.
 	if err := service.BootstrapMeta(stores, cfg.Bootstrap.AdminSub); err != nil {
 		return err
 	}
@@ -58,7 +60,7 @@ func run(configPath string) error {
 	if err := service.Sync(stores, files); err != nil {
 		return err
 	}
-	slog.Info("bootstrap complete", "files", len(files), "tenants", stores.TenantIDs())
+	slog.Info("bootstrap complete", "version", version, "files", len(files), "tenants", stores.TenantIDs())
 
 	var authn auth.Authenticator
 	if cfg.Auth.IsEnabled() {
@@ -81,7 +83,7 @@ func run(configPath string) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		slog.Info("listening", "address", cfg.Server.Address)
+		slog.Info("listening", "address", cfg.Server.Address, "version", version)
 		errCh <- srv.ListenAndServe()
 	}()
 

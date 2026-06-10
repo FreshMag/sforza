@@ -7,6 +7,7 @@
 <p align="center"><em>Scoped Functions-Based Access Control for microservice ecosystems</em></p>
 
 <p align="center">
+  <a href="https://github.com/FreshMag/sforza/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/FreshMag/sforza?logo=github&logoColor=white"/></a>
   <a href="https://github.com/FreshMag/sforza/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/FreshMag/sforza/ci.yml?branch=master&label=CI&logo=githubactions&logoColor=white"/></a>
   <a href="https://freshmag.github.io/sforza/"><img alt="Documentation" src="https://img.shields.io/github/actions/workflow/status/FreshMag/sforza/docs.yml?branch=master&label=docs&logo=materialformkdocs&logoColor=white"/></a>
   <a href="go.mod"><img alt="Go version" src="https://img.shields.io/github/go-mod/go-version/FreshMag/sforza?logo=go&logoColor=white"/></a>
