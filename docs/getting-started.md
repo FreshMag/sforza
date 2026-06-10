@@ -6,7 +6,7 @@ Development mode uses SQLite and disables authentication, so nothing else
 is required:
 
 ```bash
-git clone https://github.com/francesco/sforza
+git clone https://github.com/FreshMag/sforza
 cd sforza
 mkdir -p data
 go run ./cmd/sforza -config configs/sforza.dev.yaml

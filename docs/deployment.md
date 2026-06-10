@@ -6,7 +6,7 @@ CI publishes a distroless, statically linked image to GitHub Container
 Registry on every push to the default branch and on `v*` tags:
 
 ```bash
-docker pull ghcr.io/francesco/sforza:master
+docker pull ghcr.io/freshmag/sforza:master
 ```
 
 The image expects its configuration at `/etc/sforza/sforza.yaml` (override
@@ -19,7 +19,7 @@ docker run -p 8080:8080 \
   -v ./bootstrap:/etc/sforza/bootstrap:ro \
   -e SHARED_DSN='host=db user=sforza password=... dbname=sforza_shared' \
   -e TENANT_A_DSN='host=db user=sforza password=... dbname=sforza_tenant_a' \
-  ghcr.io/francesco/sforza:master
+  ghcr.io/freshmag/sforza:master
 ```
 
 `${VAR}` references inside the YAML are expanded from the container
@@ -28,7 +28,7 @@ environment — see [Configuration](configuration.md).
 ## docker-compose
 
 The repository ships a complete local stack
-([docker-compose.yml](https://github.com/francesco/sforza/blob/master/docker-compose.yml)):
+([docker-compose.yml](https://github.com/FreshMag/sforza/blob/master/docker-compose.yml)):
 a Postgres instance initialized with one database for the shared store and
 one per tenant, plus Sforza built from source.
 
@@ -53,7 +53,7 @@ curl localhost:8080/healthz
 
 ## CI/CD
 
-The [CI workflow](https://github.com/francesco/sforza/blob/master/.github/workflows/ci.yml):
+The [CI workflow](https://github.com/FreshMag/sforza/blob/master/.github/workflows/ci.yml):
 
 1. builds the project;
 2. runs `go vet` and the full test suite with the race detector and

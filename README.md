@@ -1,10 +1,29 @@
-# Sforza
+<p align="center">
+  <img src="logo.jpg" alt="Sforza logo" width="260"/>
+</p>
+
+<h1 align="center">Sforza</h1>
+
+<p align="center"><em>Scoped Functions-Based Access Control for microservice ecosystems</em></p>
+
+<p align="center">
+  <a href="https://github.com/FreshMag/sforza/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/FreshMag/sforza/ci.yml?branch=master&label=CI&logo=githubactions&logoColor=white"/></a>
+  <a href="https://freshmag.github.io/sforza/"><img alt="Documentation" src="https://img.shields.io/github/actions/workflow/status/FreshMag/sforza/docs.yml?branch=master&label=docs&logo=materialformkdocs&logoColor=white"/></a>
+  <a href="go.mod"><img alt="Go version" src="https://img.shields.io/github/go-mod/go-version/FreshMag/sforza?logo=go&logoColor=white"/></a>
+  <a href="https://goreportcard.com/report/github.com/FreshMag/sforza"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/FreshMag/sforza"/></a>
+  <a href="https://github.com/FreshMag/sforza/pkgs/container/sforza"><img alt="Docker image" src="https://img.shields.io/badge/ghcr.io-freshmag%2Fsforza-2496ED?logo=docker&logoColor=white"/></a>
+  <a href="https://www.conventionalcommits.org/en/v1.0.0/"><img alt="Conventional Commits" src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white"/></a>
+</p>
+
+---
 
 Sforza is a centralized authorization service implementing **SFBAC**
 (Scoped Functions-Based Access Control), a variation of RBAC where every
 permission is an `(operation, scope)` pair. It is designed for microservice
 ecosystems: multi-tenant, OIDC-authenticated (Keycloak-first), bootstrapped
 from human-readable YAML files, and distributed as a Docker image.
+
+**Full documentation: [freshmag.github.io/sforza](https://freshmag.github.io/sforza/)**
 
 ## Concepts
 
@@ -207,7 +226,7 @@ docker compose up --build
 ```
 
 Images are published to GHCR by CI on every push to the default branch and
-on `v*` tags: `ghcr.io/<owner>/sforza`.
+on `v*` tags: `ghcr.io/freshmag/sforza`.
 
 ## Development
 
