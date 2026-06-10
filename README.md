@@ -14,6 +14,8 @@
   <a href="https://goreportcard.com/report/github.com/FreshMag/sforza"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/FreshMag/sforza"/></a>
   <a href="https://github.com/FreshMag/sforza/pkgs/container/sforza"><img alt="Docker image" src="https://img.shields.io/badge/ghcr.io-freshmag%2Fsforza-2496ED?logo=docker&logoColor=white"/></a>
   <a href="https://www.conventionalcommits.org/en/v1.0.0/"><img alt="Conventional Commits" src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white"/></a>
+  <a href="https://github.com/FreshMag/sforza/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/github/license/FreshMag/sforza?logo=apache&logoColor=white"/></a>
+  <a href="https://github.com/FreshMag/sforza"><img alt="Repo size" src="https://img.shields.io/github/repo-size/FreshMag/sforza?logo=github&logoColor=white"/></a>
 </p>
 
 ---
