@@ -175,7 +175,7 @@ bootstrap:
     - /etc/sforza/bootstrap/*.yaml
 storage:
   shared:
-    driver: postgres      # or sqlite
+    driver: postgres      # postgres | mysql | sqlite | json
     dsn: ${SHARED_DSN}
   tenants:                # the full set of accepted X-Tenant-ID values
     tenant-a:
@@ -241,8 +241,10 @@ The test suite covers permission resolution (overrides, multi-role merge,
 ID unions), deny-by-default, tenant isolation, meta authorization, the full
 admin API surface, OIDC token validation against a fake provider (expired,
 forged, wrong-audience and mismatched-sub tokens), bootstrap idempotency
-and configuration validation. Tests run against SQLite and need no external
-services; the storage layer is identical for Postgres.
+and configuration validation, plus driver-parity tests that run the same
+scenarios against the SQLite and JSON backends. Tests need no external
+services; the GORM-based storage layer is identical for PostgreSQL and
+MySQL.
 
 ### Layout
 
@@ -250,7 +252,7 @@ services; the storage layer is identical for Postgres.
 cmd/sforza          entrypoint
 internal/config     YAML + env configuration
 internal/model      domain types (scopes, meta model)
-internal/store      GORM models, shared + per-tenant databases
+internal/store      storage interfaces; GORM (SQLite/PostgreSQL/MySQL) and JSON backends
 internal/service    permission resolution, administration, bootstrap sync
 internal/auth       OIDC and development authenticators
 internal/api        HTTP routing, middleware, handlers

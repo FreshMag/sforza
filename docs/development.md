@@ -8,9 +8,10 @@ go vet ./...
 go test -race -coverpkg=./internal/... ./...
 ```
 
-Tests run entirely against SQLite — no external services needed. The
-storage layer is identical for Postgres (GORM with driver selection per
-DSN), and CI runs the same suite with the race detector.
+Tests run entirely against the embedded backends (SQLite and the JSON
+store) — no external services needed. The GORM-based storage layer is
+identical for PostgreSQL and MySQL, and CI runs the same suite with the
+race detector.
 
 The suite covers:
 
@@ -34,7 +35,7 @@ The suite covers:
 cmd/sforza          entrypoint (config, bootstrap, graceful shutdown)
 internal/config     YAML + env-expansion configuration
 internal/model      domain types: scopes, meta operation catalog
-internal/store      GORM models, shared + per-tenant database handles
+internal/store      storage interfaces; GORM (SQLite/PostgreSQL/MySQL) and JSON backends
 internal/service    resolution, administration, bootstrap synchronization
 internal/auth       OIDC and development authenticators
 internal/api        chi router, middleware, handlers
@@ -58,6 +59,11 @@ docs/               this documentation site (MkDocs)
   repeatedly; startup order is migrate → meta/admin bootstrap → file sync.
 - **Authenticator interface** — `auth.Authenticator` has two
   implementations (OIDC, static); tests inject either.
+- **Storage interfaces** — `store.Shared` and `store.Tenant` abstract
+  persistence; the GORM backend serves SQLite, PostgreSQL and MySQL, and a
+  local JSON file backend serves development and tiny deployments. A
+  driver-parity test runs the same scenario against every embedded backend
+  so implementations cannot drift.
 
 ## Documentation site
 

@@ -29,7 +29,7 @@ bootstrap:
 
 storage:
   shared:                       # required
-    driver: postgres            # postgres | sqlite
+    driver: postgres            # postgres | mysql | sqlite | json
     dsn: ${SHARED_DSN}
   tenants:                      # at least one required; keys = tenant IDs
     tenant-a:
@@ -59,8 +59,20 @@ storage:
 | Driver | DSN example | Use |
 |---|---|---|
 | `postgres` | `host=db user=sforza password=... dbname=sforza_shared sslmode=disable` | Production. |
+| `mysql` | `sforza:secret@tcp(db:3306)/sforza_shared?parseTime=true` | Production. |
 | `sqlite` | `data/shared.db` | Development, tests, single-node setups. |
+| `json` | `data/shared.json` | Development, tests, tiny single-node setups. |
 
-Schema migration runs automatically and idempotently for every database at
-startup, so adding a tenant is just a new `storage.tenants` entry pointing
-at an empty database.
+Drivers can be mixed freely — e.g. a PostgreSQL shared store with one JSON
+file per tenant.
+
+For the SQL drivers, schema migration runs automatically and idempotently
+for every database at startup, so adding a tenant is just a new
+`storage.tenants` entry pointing at an empty database.
+
+!!! note "The JSON store"
+    The `json` driver keeps the whole dataset in memory and rewrites the
+    backing file atomically on every change. The layout mirrors the
+    bootstrap YAML (roles with permissions and restricted IDs, users with
+    roles and overrides), so the file stays human-readable and diffable.
+    It is not meant for multi-instance deployments or large datasets.

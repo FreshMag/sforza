@@ -43,8 +43,8 @@ curl localhost:8080/healthz
       up when Sforza boots, since discovery happens at startup).
 - [ ] Set `auth.audience` so tokens minted for other services are
       rejected.
-- [ ] Postgres for the shared and tenant databases; SQLite is for
-      development and single-node use.
+- [ ] PostgreSQL or MySQL for the shared and tenant databases; SQLite
+      and the JSON store are for development and single-node use.
 - [ ] One database per tenant, ideally with distinct credentials.
 - [ ] `bootstrap.admin-sub` set to the real administrator subject from
       your identity provider.
