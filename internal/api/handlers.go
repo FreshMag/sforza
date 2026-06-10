@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/service"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/service"
 )
 
 // --- Self-service permission queries ---

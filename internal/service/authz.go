@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/store"
 )
 
 // resolution describes how an operation's effective scope was derived.

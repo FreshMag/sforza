@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/store"
 )
 
 // --- Shared database: resources, operations, users ---

@@ -9,10 +9,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/francesco/sforza/internal/auth"
-	"github.com/francesco/sforza/internal/config"
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/auth"
+	"github.com/FreshMag/sforza/internal/config"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/store"
 )
 
 // Server wires storage, authentication and configuration into an HTTP API.

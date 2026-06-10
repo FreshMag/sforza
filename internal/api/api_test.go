@@ -12,13 +12,13 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/francesco/sforza/internal/api"
-	"github.com/francesco/sforza/internal/auth"
-	"github.com/francesco/sforza/internal/config"
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/service"
-	"github.com/francesco/sforza/internal/store"
-	"github.com/francesco/sforza/internal/testutil"
+	"github.com/FreshMag/sforza/internal/api"
+	"github.com/FreshMag/sforza/internal/auth"
+	"github.com/FreshMag/sforza/internal/config"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/service"
+	"github.com/FreshMag/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/testutil"
 )
 
 type testEnv struct {

@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/francesco/sforza/internal/auth"
-	"github.com/francesco/sforza/internal/service"
+	"github.com/FreshMag/sforza/internal/auth"
+	"github.com/FreshMag/sforza/internal/service"
 )
 
 // HeaderTenantID selects the active tenant for the request.

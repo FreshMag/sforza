@@ -8,8 +8,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/store"
 )
 
 // BootstrapFile is the YAML document a microservice contributes to register

@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/francesco/sforza/internal/config"
+	"github.com/FreshMag/sforza/internal/config"
 )
 
 // Stores holds the shared database plus one database handle per tenant.

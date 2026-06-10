@@ -14,7 +14,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/francesco/sforza/internal/auth"
+	"github.com/FreshMag/sforza/internal/auth"
 )
 
 func TestStaticAuthenticator(t *testing.T) {

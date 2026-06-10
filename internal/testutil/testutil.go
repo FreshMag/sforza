@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/francesco/sforza/internal/config"
-	"github.com/francesco/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/config"
+	"github.com/FreshMag/sforza/internal/store"
 )
 
 // AdminSub is the bootstrap administrator subject used in tests.

@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/francesco/sforza/internal/model"
-	"github.com/francesco/sforza/internal/service"
-	"github.com/francesco/sforza/internal/store"
-	"github.com/francesco/sforza/internal/testutil"
+	"github.com/FreshMag/sforza/internal/model"
+	"github.com/FreshMag/sforza/internal/service"
+	"github.com/FreshMag/sforza/internal/store"
+	"github.com/FreshMag/sforza/internal/testutil"
 )
 
 const bootstrapDoc = `
