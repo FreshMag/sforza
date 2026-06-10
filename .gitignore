@@ -29,3 +29,6 @@ go.work
 # Sforza local data
 data/
 *.db
+
+# MkDocs build output
+site/
