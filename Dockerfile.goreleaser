@@ -1,0 +1,8 @@
+# Used only by GoReleaser. The binary is already cross-compiled by the
+# `builds` step, so GoReleaser's build context only contains that binary —
+# we just drop it into the runtime image (no source build here).
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY sforza /usr/local/bin/sforza
+ENV SFORZA_CONFIG=/etc/sforza/sforza.yaml
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/sforza"]

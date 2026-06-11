@@ -50,6 +50,7 @@ changelog:
 dockers:
   - id: sforza-amd64
     use: buildx
+    dockerfile: Dockerfile.goreleaser
     goos: linux
     goarch: amd64
     image_templates:
@@ -63,6 +64,7 @@ dockers:
       - --label=org.opencontainers.image.source=https://github.com/FreshMag/sforza
   - id: sforza-arm64
     use: buildx
+    dockerfile: Dockerfile.goreleaser
     goos: linux
     goarch: arm64
     image_templates:
