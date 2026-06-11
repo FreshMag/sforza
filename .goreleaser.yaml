@@ -43,8 +43,8 @@ checksum:
   algorithm: sha256
 
 changelog:
-  # release-please manages the CHANGELOG.md; goreleaser uses GitHub's
-  # auto-generated notes for the release body.
+  # semantic-release manages the CHANGELOG.md and the release notes;
+  # goreleaser uses GitHub's auto-generated notes for the release body.
   use: github-native
 
 dockers:
@@ -89,7 +89,7 @@ release:
   github:
     owner: FreshMag
     name: sforza
-  # release-please already created the release; goreleaser only uploads
+  # semantic-release already created the release; goreleaser only uploads
   # artifacts to it.
   draft: false
   prerelease: auto
